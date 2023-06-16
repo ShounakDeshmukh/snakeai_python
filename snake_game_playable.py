@@ -148,7 +148,6 @@ def draw_frames():
 
 
 def main():
-    food = None
     place_food()
     game_over = False
     while not game_over:
