@@ -18,7 +18,7 @@ class Direction(Enum):
 Point = namedtuple("Point", "x , y")
 
 BODY_SEGMENT_SIZE = 20
-SPEED = 15
+SPEED = 40
 CATPPUCCIN_WHITE = (245, 224, 220)
 CATPPUCCIN_RED = (210, 15, 57)
 CATPPUCCIN_PINK = (234, 118, 203)
@@ -117,7 +117,7 @@ class SnakeGameAI:
         self.snake.insert(0, self.snake_head)
         reward = 0
         is_game_over = False
-        if self.is_collision() or self.frame_count > 1000 * len(self.snake):
+        if self.is_collision() or self.frame_count > 100 * len(self.snake):
             is_game_over = True
             reward = NEGATIVE_REWARD
             return reward, is_game_over, self.score
