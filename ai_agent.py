@@ -1,9 +1,9 @@
-import numpy as np
-import tensorflow as tf
-from tensorflow import keras
+import torch
 import random
-from snake_game_ai import SnakeGameAI, Point, Direction, BODY_SEGMENT_SIZE
+import numpy as np
 from collections import deque
+from snake_game_ai import SnakeGameAI, Direction, Point, BODY_SEGMENT_SIZE
+from model import Linear_QNet, QTrainer
 
 
 MAX_MEMORY = 100000
@@ -15,11 +15,10 @@ class Agent:
     def __init__(self):
         self.n_games = 0
         self.epsilon = 0  # randomness
-        self.gamma = 0.9  # discount rate
-        self.memory = deque(maxlen=MAX_MEMORY)
-        self.model = None
-        self.trainer = None
-        # TODO: model and tainer
+        self.gamma = 0.1  # discount rate
+        self.memory = deque(maxlen=MAX_MEMORY)  # popleft()
+        self.model = Linear_QNet(11, 256, 3)
+        self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
     def get_state(self, game):
         head = game.snake[0]
@@ -53,10 +52,10 @@ class Agent:
             dir_right,
             dir_up,
             dir_down,
-            game.food.x < game.head.x,  # food left
-            game.food.x > game.head.x,  # food right
-            game.food.y < game.head.y,  # food up
-            game.food.y > game.head.y,  # food down
+            game.food.x < game.snake_head.x,  # food left
+            game.food.x > game.snake_head.x,  # food right
+            game.food.y < game.snake_head.y,  # food up
+            game.food.y > game.snake_head.y,  # food down
         ]
 
         return np.array(state, dtype=int)
@@ -84,9 +83,10 @@ class Agent:
             move = random.randint(0, 2)
             final_move[move] = 1
         else:
-            state0 = tf.constant(state, dtype=tf.float16)
-            prediction = self.model.predict(state0)
-            final_move[np.argmax(prediction)] = 1
+            state0 = torch.tensor(state, dtype=torch.float)
+            prediction = self.model(state0)
+            move = torch.argmax(prediction).item()
+            final_move[move] = 1
 
         return final_move
 
