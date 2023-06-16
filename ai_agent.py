@@ -62,16 +62,33 @@ class Agent:
         return np.array(state, dtype=int)
 
     def game_memory(self, state, action, reward, next_state, done):
-        self.memory.append(state, action, reward, next_state, done)
+        self.memory.append((state, action, reward, next_state, done))
 
     def train_on_long_term_memory(self):
-        pass
+        if len(self.memory) > BATCH_SIZE:
+            mini_batch = random.sample(self.memory, BATCH_SIZE)
+        else:
+            mini_batch = self.memory
+
+        states, actions, rewards, next_states, dones = zip(*mini_batch)
+        self.trainer.train_step(states, actions, rewards, next_states, dones)
 
     def train_on_short_term_memory(self, state, action, reward, next_state, done):
-        pass
+        self.trainer.train_step(state, action, reward, next_state, done)
 
     def get_action(self, state):
-        pass
+        # explore phase
+        self.epsilon = 80 - self.n_games
+        final_move = [0, 0, 0]
+        if random.randint(0, 200) < self.epsilon:
+            move = random.randint(0, 2)
+            final_move[move] = 1
+        else:
+            state0 = tf.constant(state, dtype=tf.float16)
+            prediction = self.model.predict(state0)
+            final_move[np.argmax(prediction)] = 1
+
+        return final_move
 
 
 def train():
