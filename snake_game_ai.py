@@ -107,13 +107,13 @@ class SnakeGameAI:
             return True
         return False
 
-    def game_tick(self):
+    def game_tick(self, action):
         self.frame_count += 1
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return True, self.score
 
-        self.move()
+        self.move(action)
         self.snake.insert(0, self.snake_head)
         reward = 0
         is_game_over = False
